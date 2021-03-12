@@ -1,0 +1,110 @@
+---
+title: "Milestone 2"
+author: "Madi Polley"
+date: "3/9/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(tidyverse)
+```
+
+```{r}
+#reading in the datasets
+data15 = read.csv("2015.csv")
+data16 = read.csv("2015.csv")
+data17 = read.csv("2017.csv")
+data18 = read.csv("2018.csv")
+data19 = read.csv("2019.csv")
+
+```
+
+```{r}
+head(data15)
+head(data16)
+head(data17)
+head(data18)
+head(data19)
+```
+
+```{r}
+#renaming columns in order to merge properly
+data15 = data15 %>%
+  rename( Country.or.region = Country,
+          Score = Happiness.Score,
+        Overall.rank = Happiness.Rank,
+        GDP.per.capita = Economy..GDP.per.Capita. ,
+         Social.support = Family,
+         Healthy.life.expectancy = Health..Life.Expectancy. ,
+         Freedom.to.make.life.choices = Freedom,
+        Perceptions.of.corruption = Trust..Government.Corruption.
+         ) %>%
+  select(Country.or.region, Score, Overall.rank, GDP.per.capita, Social.support, Healthy.life.expectancy, Freedom.to.make.life.choices, Perceptions.of.corruption, Generosity) %>%
+  mutate(year = 2015)
+
+data16 = data16 %>%
+  rename( Country.or.region = Country,
+          Score = Happiness.Score,
+        Overall.rank = Happiness.Rank,
+        GDP.per.capita = Economy..GDP.per.Capita. ,
+         Social.support = Family,
+         Healthy.life.expectancy = Health..Life.Expectancy. ,
+         Freedom.to.make.life.choices = Freedom,
+        Perceptions.of.corruption = Trust..Government.Corruption.
+         ) %>%
+  select(Country.or.region, Score, Overall.rank, GDP.per.capita, Social.support, Healthy.life.expectancy, Freedom.to.make.life.choices, Perceptions.of.corruption, Generosity) %>%
+  mutate(year = 2016)
+
+data17 = data17 %>%
+  rename( Country.or.region = Country,
+          Score = Happiness.Score,
+        Overall.rank = Happiness.Rank,
+        GDP.per.capita = Economy..GDP.per.Capita. ,
+         Social.support = Family,
+         Healthy.life.expectancy = Health..Life.Expectancy. ,
+         Freedom.to.make.life.choices = Freedom,
+        Perceptions.of.corruption = Trust..Government.Corruption.
+         ) %>%
+  select(Country.or.region, Score, Overall.rank, GDP.per.capita, Social.support, Healthy.life.expectancy, Freedom.to.make.life.choices, Perceptions.of.corruption, Generosity) %>%
+  mutate(year = 2017)
+
+#turning the perceptions column from a factor into a numeric variable
+
+data18 = data18%>%
+  mutate(Perceptions.of.corruption = as.numeric(as.character(Perceptions.of.corruption)),
+         year = 2018)
+
+data19 = data19%>%
+  mutate(year = 2019)
+
+data18$Perceptions.of.corruption
+
+```
+
+
+```{r}
+#joining all observations of all the datasets
+allyears = bind_rows(data15, data16, data17, data18, data19)
+
+#Filtering out countries that are not found in all 5 datasets or have NA values
+complete = allyears %>%
+  filter(!is.na(allyears$Perceptions.of.corruption)) %>%
+  group_by(Country.or.region) %>%
+  summarize(count = n()) %>%
+  filter(count == 5)
+complete
+
+worldhappiness = complete %>%
+  left_join(allyears)
+
+#Checking to make sure all countries have 5 observations
+worldhappiness %>%
+  group_by(Country.or.region) %>%
+  summarize(n())
+
+#writing the new data file without incomplete cases
+write_csv(worldhappiness, "WorldHappinessData.csv")
+```
+
